@@ -1,4 +1,4 @@
-/* AuraTrack — Premium Responsive & Soft-Minimalist Stylesheet */
+/* Prep Log — Premium Responsive & Soft-Minimalist Stylesheet */
 
 :root {
   --font-heading: 'Outfit', sans-serif;
@@ -486,6 +486,33 @@ body {
   gap: 0.65rem;
 }
 
+.accordion-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.accordion-add-btn {
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.accordion-add-btn:hover {
+  background-color: var(--accent);
+  color: var(--bg-surface);
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+
 .accordion-arrow {
   color: var(--text-muted);
   transition: transform var(--transition-normal);
@@ -518,6 +545,79 @@ body {
 
 .accordion-content.closed {
   display: none;
+}
+
+/* Add Category Trigger Button & Inline Form */
+.add-category-trigger {
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.85rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all var(--transition-fast);
+  margin-top: 0.25rem;
+}
+
+.add-category-trigger:hover {
+  background-color: var(--bg-surface);
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+
+.add-category-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  animation: fadeIn var(--transition-fast);
+}
+
+.add-category-input {
+  flex: 1;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.add-category-input:focus {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.btn-cat-add {
+  background-color: var(--accent);
+  color: var(--bg-surface);
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-cat-cancel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
 /* Individual Task Item Styling */
@@ -654,24 +754,6 @@ body {
   border: 1px solid transparent;
 }
 
-.cat-badge.dsa {
-  background: var(--cat-dsa-bg);
-  color: var(--cat-dsa-text);
-  border-color: var(--cat-dsa-border);
-}
-
-.cat-badge.placement-cell {
-  background: var(--cat-placement-bg);
-  color: var(--cat-placement-text);
-  border-color: var(--cat-placement-border);
-}
-
-.cat-badge.personal {
-  background: var(--cat-personal-bg);
-  color: var(--cat-personal-text);
-  border-color: var(--cat-personal-border);
-}
-
 .postponed-tag {
   font-size: 0.72rem;
   color: var(--text-muted);
@@ -806,36 +888,6 @@ body {
   color: var(--accent);
 }
 
-/* Floating Action Button (FAB) */
-.fab-button {
-  position: absolute;
-  top: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background-color: var(--accent);
-  color: var(--bg-base);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transition: all var(--transition-fast);
-  z-index: 105;
-}
-
-.fab-button:hover {
-  transform: translateX(-50%) translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-}
-
-.fab-button:active {
-  transform: translateX(-50%) translateY(0);
-}
-
 /* Slide-up Bottom Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -913,10 +965,13 @@ body {
 .modal-cat-pills {
   display: flex;
   gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.1rem 0;
 }
 
 .modal-cat-pill {
   flex: 1;
+  min-width: 100px;
   background-color: var(--bg-base);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);

@@ -1,19 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
 
-export default function AddModal({ isOpen, onClose, handleAddTask }) {
+const getCategoryIcon = (catName) => {
+  if (catName === 'DSA') return '💻';
+  if (catName === 'Placement Cell') return '💼';
+  if (catName === 'Personal') return '👤';
+  return '🏷️';
+};
+
+export default function AddModal({ isOpen, onClose, handleAddTask, categories, defaultCategory }) {
   const [text, setText] = useState('');
   const [category, setCategory] = useState('DSA');
   const inputRef = useRef(null);
 
-  // Focus input automatically on modal open
+  // Set the default category and focus input on open
   useEffect(() => {
     if (isOpen) {
+      setCategory(defaultCategory || (categories[0] || 'DSA'));
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultCategory, categories]);
 
   if (!isOpen) return null;
 
@@ -22,15 +30,8 @@ export default function AddModal({ isOpen, onClose, handleAddTask }) {
     if (!text.trim()) return;
     handleAddTask(text.trim(), category);
     setText('');
-    setCategory('DSA');
     onClose();
   };
-
-  const categories = [
-    { name: 'DSA', icon: '💻' },
-    { name: 'Placement Cell', icon: '💼' },
-    { name: 'Personal', icon: '👤' }
-  ];
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -56,17 +57,18 @@ export default function AddModal({ isOpen, onClose, handleAddTask }) {
           <div className="modal-cat-row">
             <span className="modal-cat-label">Select Category</span>
             <div className="modal-cat-pills">
-              {categories.map((cat) => {
-                const isActive = category === cat.name;
+              {categories.map((catName) => {
+                const isActive = category === catName;
+                const icon = getCategoryIcon(catName);
                 return (
                   <button
-                    key={cat.name}
+                    key={catName}
                     type="button"
                     className={`modal-cat-pill ${isActive ? 'active' : ''}`}
-                    onClick={() => setCategory(cat.name)}
+                    onClick={() => setCategory(catName)}
                   >
-                    <span>{cat.icon}</span>
-                    <span>{cat.name}</span>
+                    <span>{icon}</span>
+                    <span>{catName}</span>
                   </button>
                 );
               })}

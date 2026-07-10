@@ -26,6 +26,43 @@ const getTaskEmoji = (text, category) => {
   return '✨';
 };
 
+// Deterministic HSL hue generation based on string name
+const getCategoryHue = (name) => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash % 360);
+};
+
+// Generate badge styles dynamically for default or custom categories
+const getBadgeStyle = (category, theme) => {
+  let hue;
+  if (category === 'DSA') hue = 262;
+  else if (category === 'Placement Cell') hue = 32;
+  else if (category === 'Personal') hue = 162;
+  else hue = getCategoryHue(category);
+
+  const isDark = theme === 'dark';
+  if (isDark) {
+    return {
+      backgroundColor: `hsla(${hue}, 80%, 65%, 0.12)`,
+      color: `hsl(${hue}, 85%, 70%)`,
+      borderColor: `hsla(${hue}, 80%, 65%, 0.25)`,
+      borderWidth: '1px',
+      borderStyle: 'solid'
+    };
+  } else {
+    return {
+      backgroundColor: `hsla(${hue}, 80%, 45%, 0.07)`,
+      color: `hsl(${hue}, 80%, 40%)`,
+      borderColor: `hsla(${hue}, 80%, 45%, 0.15)`,
+      borderWidth: '1px',
+      borderStyle: 'solid'
+    };
+  }
+};
+
 export default function TaskItem({
   task,
   selectedDate,
@@ -34,7 +71,8 @@ export default function TaskItem({
   handleToggleComplete,
   handlePostponeTask,
   handleDeleteTask,
-  formatDateDisplay
+  formatDateDisplay,
+  theme
 }) {
   const isPostponedOnThisDay = task.wasShifted && task.shiftedFromDate === selectedDate;
   const isCompletedOnThisDay = task.isCompleted && task.dateCompleted === selectedDate;
@@ -46,9 +84,16 @@ export default function TaskItem({
   else if (isMissedOnThisDay) itemClass = 'missed';
 
   const taskEmoji = getTaskEmoji(task.text, task.category);
+  const badgeStyle = getBadgeStyle(task.category, theme);
+
+  // Checkbox active condition: you can only tick a task on its scheduled date when it is TODAY.
+  // Wait! The user says: "its just that i can tick on that task on that particular day only"
+  // So you can tick a task if selectedDate === todayStr AND the task is active today.
+  // Meaning you can tick if isToday is true, and the task is scheduled for today (task.activeDate === selectedDate).
+  const canCheckboxClick = isToday && (task.activeDate === selectedDate) && !isPostponedOnThisDay;
 
   return (
-    <li className={`task-item-card ${itemClass} ${!isToday ? 'readonly' : ''}`}>
+    <li className={`task-item-card ${itemClass} ${!canCheckboxClick ? 'readonly' : ''}`}>
       <div className="task-card-left">
         {/* Custom Square Checkbox */}
         <label className="square-checkbox-wrapper">
@@ -56,7 +101,7 @@ export default function TaskItem({
             type="checkbox"
             className="square-checkbox-input"
             checked={isCompletedOnThisDay}
-            disabled={!isToday || isPostponedOnThisDay}
+            disabled={!canCheckboxClick}
             onChange={() => handleToggleComplete(task.id)}
           />
           <span className="square-checkbox-box">
@@ -73,7 +118,7 @@ export default function TaskItem({
 
           {/* Badges and Metadata */}
           <div className="task-meta-row">
-            <span className={`cat-badge ${task.category.toLowerCase().replace(' ', '-')}`}>
+            <span className="cat-badge" style={badgeStyle}>
               {task.category}
             </span>
 
@@ -99,7 +144,7 @@ export default function TaskItem({
         </div>
       </div>
 
-      {/* Action Buttons (Today Only, and only if not postponed) */}
+      {/* Action Buttons (Only allowed if selectedDate is TODAY, and only if not postponed) */}
       {isToday && !isPostponedOnThisDay && (
         <div className="item-actions">
           {!isCompletedOnThisDay && (

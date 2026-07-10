@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, BarChart2, User, Plus } from 'lucide-react';
+import { Home, BarChart2, User } from 'lucide-react';
 
-export default function BottomNav({ currentTab, setCurrentTab, setIsModalOpen, isToday }) {
+export default function BottomNav({ currentTab, setCurrentTab }) {
   return (
     <nav className="bottom-nav-container">
       <div className="bottom-nav-content">
@@ -12,19 +12,6 @@ export default function BottomNav({ currentTab, setCurrentTab, setIsModalOpen, i
           <Home size={20} />
           <span>Home</span>
         </button>
-
-        {/* Floating Action Button for Adding Task (Active on Today only) */}
-        {isToday ? (
-          <button
-            className="fab-button"
-            onClick={() => setIsModalOpen(true)}
-            title="Create New Task"
-          >
-            <Plus size={24} />
-          </button>
-        ) : (
-          <div style={{ width: '52px', height: '0px' }}></div> // Spacer when plus button is hidden
-        )}
 
         <button
           className={`bottom-nav-item ${currentTab === 'insights' ? 'active' : ''}`}

@@ -58,17 +58,25 @@ export default function App() {
 
   // --- States ---
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('auratrack_tasks');
+    const saved = localStorage.getItem('preplog_tasks') || localStorage.getItem('auratrack_tasks');
     return saved ? JSON.parse(saved) : [];
+  });
+
+  const [categories, setCategories] = useState(() => {
+    const savedCats = localStorage.getItem('preplog_categories') || localStorage.getItem('auratrack_categories');
+    return savedCats ? JSON.parse(savedCats) : ['DSA', 'Placement Cell', 'Personal'];
   });
   
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [currentTab, setCurrentTab] = useState('home');
   const [statusFilter, setStatusFilter] = useState('Todo');
+  
+  // Modal configurations
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalDefaultCategory, setModalDefaultCategory] = useState('DSA');
   
   const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('auratrack_theme');
+    const savedTheme = localStorage.getItem('preplog_theme') || localStorage.getItem('auratrack_theme');
     if (savedTheme) return savedTheme;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
@@ -77,13 +85,18 @@ export default function App() {
 
   // Sync tasks
   useEffect(() => {
-    localStorage.setItem('auratrack_tasks', JSON.stringify(tasks));
+    localStorage.setItem('preplog_tasks', JSON.stringify(tasks));
   }, [tasks]);
+
+  // Sync categories
+  useEffect(() => {
+    localStorage.setItem('preplog_categories', JSON.stringify(categories));
+  }, [categories]);
 
   // Sync theme
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('auratrack_theme', theme);
+    localStorage.setItem('preplog_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
@@ -103,19 +116,27 @@ export default function App() {
       text,
       category,
       isCompleted: false,
-      dateCreated: selectedDate, // Will be todayStr as modal add button is only active when isToday
+      dateCreated: todayStr, // Physically created today
       dateCompleted: null,
       wasShifted: false,
       shiftedFromDate: null,
-      activeDate: selectedDate
+      activeDate: selectedDate // Scheduled active date (could be Today or Future date)
     };
     setTasks(prev => [newTask, ...prev]);
   };
 
+  const handleAddCategory = (name) => {
+    if (categories.includes(name)) return;
+    setCategories(prev => [...prev, name]);
+  };
+
   const handleToggleComplete = (id) => {
-    if (!isToday) return;
+    if (!isToday) return; // Completion toggle only allowed when selectedDate is Today
     setTasks(prev => prev.map(task => {
       if (task.id === id) {
+        // Ticking is restricted to the scheduled day only
+        if (task.activeDate !== todayStr) return task;
+        
         const nextState = !task.isCompleted;
         return {
           ...task,
@@ -128,10 +149,13 @@ export default function App() {
   };
 
   const handlePostponeTask = (id) => {
-    if (!isToday) return;
+    if (!isToday) return; // Postpone only allowed when selectedDate is Today
     const tomorrowStr = getOffsetDateString(selectedDate, 1);
     setTasks(prev => prev.map(task => {
       if (task.id === id) {
+        // Postponing restricted to today's active tasks only
+        if (task.activeDate !== todayStr) return task;
+
         return {
           ...task,
           activeDate: tomorrowStr,
@@ -144,8 +168,14 @@ export default function App() {
   };
 
   const handleDeleteTask = (id) => {
-    if (!isToday) return;
+    if (!isToday) return; // Deleting tasks on the main list only allowed on Today view
     setTasks(prev => prev.filter(task => task.id !== id));
+  };
+
+  // Trigger modal launch with pre-selected category
+  const openAddTaskModal = (categoryName) => {
+    setModalDefaultCategory(categoryName);
+    setIsModalOpen(true);
   };
 
   // --- Filtering & Stat Calculations for Current Date ---
@@ -225,7 +255,7 @@ export default function App() {
               ) : (
                 <>
                   <AlertCircle size={16} />
-                  <span>Planning Mode: Future logs are read-only.</span>
+                  <span>Planning Mode: Assign tasks below. Ticking is disabled until the day arrives.</span>
                 </>
               )}
             </div>
@@ -259,7 +289,7 @@ export default function App() {
                     {pendingCount > 0 && <> • <strong>{pendingCount}</strong> pending</>}
                   </>
                 ) : (
-                  "Add items via the floating plus (+) button below."
+                  "Add items via the plus (+) button next to each category."
                 )}
               </span>
             </div>
@@ -294,13 +324,18 @@ export default function App() {
           {/* Categorized collapsible accordion task lists */}
           <TaskAccordions
             tasks={filteredTasks}
+            categories={categories}
+            handleAddCategory={handleAddCategory}
             selectedDate={selectedDate}
+            todayStr={todayStr}
             isToday={isToday}
             isPast={isPast}
             handleToggleComplete={handleToggleComplete}
             handlePostponeTask={handlePostponeTask}
             handleDeleteTask={handleDeleteTask}
             formatDateDisplay={formatDateDisplay}
+            theme={theme}
+            openAddTaskModal={openAddTaskModal}
           />
         </>
       )}
@@ -317,8 +352,6 @@ export default function App() {
       <BottomNav
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
-        setIsModalOpen={setIsModalOpen}
-        isToday={isToday}
       />
 
       {/* Slide-up Task Creation Dialog Modal Overlay */}
@@ -326,6 +359,8 @@ export default function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         handleAddTask={handleAddTask}
+        categories={categories}
+        defaultCategory={modalDefaultCategory}
       />
     </div>
   );
